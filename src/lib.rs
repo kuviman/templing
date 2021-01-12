@@ -42,7 +42,7 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
     for file in file_dependencies {
         writeln!(&mut result, "include_bytes!({:?});", file).unwrap();
     }
-    writeln!(&mut result, "let mut result = String::new();").unwrap();
+    writeln!(&mut result, "let mut templing_result = String::new();").unwrap();
     for line in input.lines() {
         let non_ws = line.trim();
         if let Some(code) = non_ws.strip_prefix("- ") {
@@ -54,7 +54,12 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                     Some(index) => index,
                     None => line.len(),
                 };
-                writeln!(&mut result, "result.push_str({:?});", &line[..index]).unwrap();
+                writeln!(
+                    &mut result,
+                    "templing_result.push_str({:?});",
+                    &line[..index],
+                )
+                .unwrap();
                 if index < line.len() {
                     line = &line[index + 2..];
                     let index = line.find("}}").expect("Failed to find closing brackets");
@@ -62,18 +67,22 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                     if code.chars().next() == Some('#') {
                         writeln!(&mut result, "{}", &code[1..]).unwrap();
                     } else {
-                        writeln!(&mut result, "result.push_str(&{{ {} }}.to_string());", code)
-                            .unwrap();
+                        writeln!(
+                            &mut result,
+                            "templing_result.push_str(&{{ {} }}.to_string());",
+                            code,
+                        )
+                        .unwrap();
                     }
                     line = &line[index + 2..];
                 } else {
                     line = "";
                 }
             }
-            writeln!(&mut result, "result.push('\\n');").unwrap();
+            writeln!(&mut result, "templing_result.push('\\n');").unwrap();
         }
     }
-    writeln!(&mut result, "result").unwrap();
+    writeln!(&mut result, "templing_result").unwrap();
     writeln!(&mut result, "}}").unwrap();
     result
 }
