@@ -2,6 +2,9 @@
 name = "templing"
 version = "0.1.0-alpha.0"
 authors = ["kuviman <kuviman@gmail.com>"]
+description = "Minimal templating engine"
+license = "MIT"
+homepage = "https://github.com/kuviman/templing"
 edition = "2018"
 
 [lib]
