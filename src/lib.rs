@@ -52,6 +52,17 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
         } else {
             let mut line = line;
             let mut current_column = 1;
+            let mut write_eol = true;
+            if line.trim().starts_with('~') {
+                let index = line.find('~').unwrap();
+                current_column += line[index + 1..].chars().count();
+                line = &line[index + 1..];
+            }
+            if line.trim().ends_with('~') {
+                let index = line.rfind('~').unwrap();
+                line = &line[..index];
+                write_eol = false;
+            }
             while !line.trim().is_empty() {
                 let index = match line.find("{{") {
                     Some(index) => index,
@@ -88,7 +99,9 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                     line = "";
                 }
             }
-            writeln!(&mut result, "templing_result.push('\\n');").unwrap();
+            if write_eol {
+                writeln!(&mut result, "templing_result.push('\\n');").unwrap();
+            }
         }
     }
     writeln!(&mut result, "templing_result").unwrap();
