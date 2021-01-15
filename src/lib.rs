@@ -91,8 +91,10 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                             &mut result,
                             "let templing_value = {{ {} }}.to_string();",
                             code,
-                        );
-                        writeln!(&mut result, "let templing_value = templing_value.trim();");
+                        )
+                        .unwrap();
+                        writeln!(&mut result, "let templing_value = templing_value.trim();")
+                            .unwrap();
                         writeln!(&mut result, "for (templing_part_index, templing_part) in templing_value.split('\\n').enumerate() {{").unwrap();
                         writeln!(&mut result, "if templing_part_index != 0 {{").unwrap();
                         writeln!(
