@@ -43,12 +43,15 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
         writeln!(&mut result, "include_bytes!({:?});", file).unwrap();
     }
     writeln!(&mut result, "let mut templing_result = String::new();").unwrap();
+    let mut current_line = 0;
     for line in input.lines() {
+        current_line += 1;
         let non_ws = line.trim();
         if let Some(code) = non_ws.strip_prefix("- ") {
             writeln!(&mut result, "{}", code).unwrap();
         } else {
             let mut line = line;
+            let mut current_column = 1;
             while !line.trim().is_empty() {
                 let index = match line.find("{{") {
                     Some(index) => index,
@@ -61,8 +64,13 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                 )
                 .unwrap();
                 if index < line.len() {
+                    current_column += line[..index + 2].chars().count();
                     line = &line[index + 2..];
-                    let index = line.find("}}").expect("Failed to find closing brackets");
+                    let index = line.find("}}").expect(&format!(
+                        "Failed to find closing brackets for {}:{}",
+                        current_line,
+                        current_column - 2,
+                    ));
                     let code = &line[..index];
                     if code.chars().next() == Some('#') {
                         writeln!(&mut result, "{}", &code[1..]).unwrap();
@@ -74,6 +82,7 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                         )
                         .unwrap();
                     }
+                    current_column += line[..index + 2].chars().count();
                     line = &line[index + 2..];
                 } else {
                     line = "";
