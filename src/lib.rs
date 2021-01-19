@@ -118,7 +118,7 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
             }
         }
     }
-    writeln!(&mut result, "templing_result").unwrap();
+    writeln!(&mut result, "templing_result.trim().to_owned()").unwrap();
     writeln!(&mut result, "}}").unwrap();
     result
 }
