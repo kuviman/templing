@@ -76,7 +76,7 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                 .unwrap();
                 if index < line.len() {
                     current_column += line[..index + 2].chars().count();
-                    let indentation = current_column - 3;
+                    writeln!(&mut result, "let templing_indentation = (templing_result.len() - templing_result.rfind('\\n').map(|pos| pos + 1).unwrap_or(0));").unwrap();
                     line = &line[index + 2..];
                     let index = line.find("}}").expect(&format!(
                         "Failed to find closing brackets for {}:{}",
@@ -97,12 +97,10 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                             .unwrap();
                         writeln!(&mut result, "for (templing_part_index, templing_part) in templing_value.split('\\n').enumerate() {{").unwrap();
                         writeln!(&mut result, "if templing_part_index != 0 {{").unwrap();
-                        writeln!(
-                            &mut result,
-                            "templing_result.push_str(\"\\n{}\");",
-                            std::iter::repeat(' ').take(indentation).collect::<String>(),
-                        )
-                        .unwrap();
+                        writeln!(&mut result, "templing_result.push('\\n');").unwrap();
+                        writeln!(&mut result, "for _ in 0..templing_indentation {{").unwrap();
+                        writeln!(&mut result, "templing_result.push(' ');").unwrap();
+                        writeln!(&mut result, "}}").unwrap();
                         writeln!(&mut result, "}}").unwrap();
                         writeln!(&mut result, "templing_result.push_str(templing_part);").unwrap();
                         writeln!(&mut result, "}}").unwrap();
