@@ -50,8 +50,13 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
         if let Some(code) = non_ws.strip_prefix("- ") {
             writeln!(&mut result, "{}", code).unwrap();
         } else {
-            let mut line = line;
             let mut current_column = 1;
+            let mut line = line.to_owned();
+            if line.trim().starts_with('\\') {
+                line = line.replacen('\\', "", 1);
+                current_column += 1;
+            }
+            let mut line = line.as_str();
             let mut write_eol = true;
             if line.trim().starts_with('~') {
                 let index = line.find('~').unwrap();
