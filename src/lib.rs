@@ -68,7 +68,7 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                 line = &line[..index];
                 write_eol = false;
             }
-            while !line.trim().is_empty() {
+            while !line.is_empty() {
                 let index = match line.find("{{") {
                     Some(index) => index,
                     None => line.len(),

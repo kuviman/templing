@@ -1,6 +1,6 @@
 [package]
 name = "templing"
-version = "0.1.0-alpha.4"
+version = "0.1.0-alpha.5"
 authors = ["kuviman <kuviman@gmail.com>"]
 description = "Minimal templating engine"
 license = "MIT"
