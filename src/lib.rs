@@ -22,7 +22,8 @@ pub fn include_templing(input: proc_macro::TokenStream) -> proc_macro::TokenStre
     let cargo_manifest_dir =
         std::env::var("CARGO_MANIFEST_DIR").expect("Failed to get cargo manifest dir");
     let path = std::path::Path::new(&cargo_manifest_dir).join(input.value());
-    let input = std::fs::read_to_string(&path).expect(&format!("Failed to read {:?}", path));
+    let input = std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("Failed to read {:?}: {}", path, e));
     templing_impl(input.as_str(), vec![path]).parse().unwrap()
 }
 
@@ -32,7 +33,8 @@ pub fn dbg_include_templing(input: proc_macro::TokenStream) -> proc_macro::Token
     let cargo_manifest_dir =
         std::env::var("CARGO_MANIFEST_DIR").expect("Failed to get cargo manifest dir");
     let path = std::path::Path::new(&cargo_manifest_dir).join(input.value());
-    let input = std::fs::read_to_string(&path).expect(&format!("Failed to read {:?}", path));
+    let input = std::fs::read_to_string(&path)
+        .unwrap_or_else(|e| panic!("Failed to read {:?}: {}", path, e));
     panic!("{}", templing_impl(input.as_str(), vec![path]));
 }
 
@@ -43,9 +45,7 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
         writeln!(&mut result, "include_bytes!({:?});", file).unwrap();
     }
     writeln!(&mut result, "let mut templing_result = String::new();").unwrap();
-    let mut current_line = 0;
-    for line in input.lines() {
-        current_line += 1;
+    for (current_line, line) in input.lines().enumerate() {
         let non_ws = line.trim();
         if let Some(code) = non_ws.strip_prefix("- ") {
             writeln!(&mut result, "{}", code).unwrap();
@@ -83,14 +83,16 @@ fn templing_impl(input: &str, file_dependencies: Vec<std::path::PathBuf>) -> Str
                     current_column += line[..index + 2].chars().count();
                     writeln!(&mut result, "let templing_indentation = (templing_result.len() - templing_result.rfind('\\n').map(|pos| pos + 1).unwrap_or(0));").unwrap();
                     line = &line[index + 2..];
-                    let index = line.find("}}").expect(&format!(
-                        "Failed to find closing brackets for {}:{}",
-                        current_line,
-                        current_column - 2,
-                    ));
+                    let index = line.find("}}").unwrap_or_else(|| {
+                        panic!(
+                            "Failed to find closing brackets for {}:{}",
+                            current_line,
+                            current_column - 2,
+                        );
+                    });
                     let code = &line[..index];
-                    if code.chars().next() == Some('#') {
-                        writeln!(&mut result, "{}", &code[1..]).unwrap();
+                    if let Some(stripped) = code.strip_prefix('#') {
+                        writeln!(&mut result, "{}", stripped).unwrap();
                     } else {
                         writeln!(
                             &mut result,
